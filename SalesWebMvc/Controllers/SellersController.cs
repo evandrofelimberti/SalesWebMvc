@@ -32,7 +32,7 @@ namespace SalesWebMvc.Controllers
         public async Task<IActionResult> Create()
         {
             var departaments = await _departmentService.FindAllAsync();
-            var viewModel = new SellerFormViewModel { Departments = departaments};
+            var viewModel = new SellerFormViewModel { Departments = departaments };
             return View(viewModel);
         }
 
@@ -43,7 +43,7 @@ namespace SalesWebMvc.Controllers
             if (!ModelState.IsValid)
             {
                 var departaments = await _departmentService.FindAllAsync();
-                var viewModel = new SellerFormViewModel { Seller = seller,  Departments = departaments };
+                var viewModel = new SellerFormViewModel { Seller = seller, Departments = departaments };
                 return View(viewModel);
             }
             await _sellerService.InsertAsync(seller);
@@ -54,23 +54,30 @@ namespace SalesWebMvc.Controllers
         {
             if (id == null)
             {
-                return RedirectToAction(nameof(Error), new { message = "Id not provided"});
+                return RedirectToAction(nameof(Error), new { message = "Id not provided" });
             }
 
             var obj = await _sellerService.FindByIdAsync(id.Value);
             if (obj == null)
             {
-                return RedirectToAction(nameof(Error), new { message = "Id not found" }); 
+                return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
             return View(obj);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async  Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            await _sellerService.RemoveAsync(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _sellerService.RemoveAsync(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (IntegrityException e)
+            {
+                return RedirectToAction(nameof(Error), new { message = e.Message });
+            }
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -120,7 +127,7 @@ namespace SalesWebMvc.Controllers
             }
             try
             {
-               await _sellerService.UpdateAsync(seller);
+                await _sellerService.UpdateAsync(seller);
                 return RedirectToAction(nameof(Index));
             }
             catch (ApplicationException e)
@@ -128,15 +135,15 @@ namespace SalesWebMvc.Controllers
                 return RedirectToAction(nameof(Error), new { message = e.Message });
 
             }
-           /* catch (NotFoundException e)
-            {
-                return RedirectToAction(nameof(Error), new { message = e.Message });
+            /* catch (NotFoundException e)
+             {
+                 return RedirectToAction(nameof(Error), new { message = e.Message });
 
-            }
-            catch (DbConcurrencyException e)
-            {
-                return RedirectToAction(nameof(Error), new { message = e.Message});
-            }*/
+             }
+             catch (DbConcurrencyException e)
+             {
+                 return RedirectToAction(nameof(Error), new { message = e.Message});
+             }*/
 
         }
 
